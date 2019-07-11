@@ -1,1 +1,1 @@
-# terraform-jx-templates-gke-aps
+# terraform-jx-templates-gke
