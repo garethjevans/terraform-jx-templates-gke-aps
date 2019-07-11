@@ -3,50 +3,50 @@ terraform {
 }
 
 provider "google" {
-  version     = ">= 2.8.0"
-  project     = "${var.slm_resource_project_id}"
-  region      = "${var.slm_location_id}"
-  zone        = "${var.request_zone}"
+  version = ">= 2.8.0"
+  project = "${var.slm_resource_project_id}"
+  region  = "${var.slm_location_id}"
+  zone    = "${var.request_zone}"
 }
 
 resource "google_project_service" "cloudresourcemanager-api" {
-  project = "${var.slm_resource_project_id}"
-  service = "cloudresourcemanager.googleapis.com"
+  project            = "${var.slm_resource_project_id}"
+  service            = "cloudresourcemanager.googleapis.com"
   disable_on_destroy = false
 }
 
 resource "google_project_service" "compute-api" {
-  project = "${var.slm_resource_project_id}"
-  service = "compute.googleapis.com"
+  project            = "${var.slm_resource_project_id}"
+  service            = "compute.googleapis.com"
   disable_on_destroy = false
 }
 
 resource "google_project_service" "iam-api" {
-  project = "${var.slm_resource_project_id}"
-  service = "iam.googleapis.com"
+  project            = "${var.slm_resource_project_id}"
+  service            = "iam.googleapis.com"
   disable_on_destroy = false
 }
 
 resource "google_project_service" "cloudbuild-api" {
-  project = "${var.slm_resource_project_id}"
-  service = "cloudbuild.googleapis.com"
+  project            = "${var.slm_resource_project_id}"
+  service            = "cloudbuild.googleapis.com"
   disable_on_destroy = false
 }
 
 resource "google_project_service" "containerregistry-api" {
-  project = "${var.slm_resource_project_id}"
-  service = "containerregistry.googleapis.com"
+  project            = "${var.slm_resource_project_id}"
+  service            = "containerregistry.googleapis.com"
   disable_on_destroy = false
 }
 
 resource "google_project_service" "containeranalysis-api" {
-  project = "${var.slm_resource_project_id}"
-  service = "containeranalysis.googleapis.com"
+  project            = "${var.slm_resource_project_id}"
+  service            = "containeranalysis.googleapis.com"
   disable_on_destroy = false
 }
 resource "google_project_service" "cloudkms-api" {
-  project = "${var.slm_resource_project_id}"
-  service = "cloudkms.googleapis.com"
+  project            = "${var.slm_resource_project_id}"
+  service            = "cloudkms.googleapis.com"
   disable_on_destroy = false
 }
 
@@ -96,9 +96,9 @@ resource "google_container_cluster" "jx-cluster" {
   monitoring_service       = "${var.request_monitoring_service}"
 
   resource_labels = {
-    created-by = "${var.request_created_by}"
+    created-by        = "${var.request_created_by}"
     created-timestamp = "${var.request_created_timestamp}"
-    created-with = "terraform"
+    created-with      = "terraform"
   }
 
   lifecycle {
@@ -195,11 +195,11 @@ resource "google_kms_crypto_key" "vault-crypto-key" {
 }
 
 provider "kubernetes" {
-  host = "https://${google_container_cluster.jx-cluster.endpoint}"
-  username = "${google_container_cluster.jx-cluster.master_auth.0.username}"
-  password = "${google_container_cluster.jx-cluster.master_auth.0.password}"
-  client_certificate = "${base64decode(google_container_cluster.jx-cluster.master_auth.0.client_certificate)}"
-  client_key = "${base64decode(google_container_cluster.jx-cluster.master_auth.0.client_key)}"
+  host                   = "https://${google_container_cluster.jx-cluster.endpoint}"
+  username               = "${google_container_cluster.jx-cluster.master_auth.0.username}"
+  password               = "${google_container_cluster.jx-cluster.master_auth.0.password}"
+  client_certificate     = "${base64decode(google_container_cluster.jx-cluster.master_auth.0.client_certificate)}"
+  client_key             = "${base64decode(google_container_cluster.jx-cluster.master_auth.0.client_key)}"
   cluster_ca_certificate = "${base64decode(google_container_cluster.jx-cluster.master_auth.0.cluster_ca_certificate)}"
 }
 
