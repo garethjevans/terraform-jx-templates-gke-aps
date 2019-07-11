@@ -95,7 +95,7 @@ resource "google_container_cluster" "jx-cluster" {
   logging_service          = "${var.request_logging_service}"
   monitoring_service       = "${var.request_monitoring_service}"
 
-  resource_labels = {
+  resource_labels {
     created-by        = "${var.request_created_by}"
     created-timestamp = "${var.request_created_timestamp}"
     created-with      = "terraform"
