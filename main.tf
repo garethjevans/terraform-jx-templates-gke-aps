@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 0.12.0"
+  required_version = ">= 0.11.0"
 }
 
 provider "google" {
@@ -95,7 +95,7 @@ resource "google_container_cluster" "jx-cluster" {
   logging_service          = "${var.request_logging_service}"
   monitoring_service       = "${var.request_monitoring_service}"
 
-  resource_labels = {
+  resource_labels {
     created-by        = "${var.request_created_by}"
     created-timestamp = "${var.request_created_timestamp}"
     created-with      = "terraform"
@@ -112,79 +112,79 @@ resource "google_storage_bucket" "lts-bucket" {
 }
 
 resource "google_service_account" "kaniko-sa" {
-  count        = var.enable_kaniko
+  count        = "${var.request_enable_kaniko}"
   account_id   = "${var.request_cluster_name}-ko"
   display_name = "Kaniko service account for ${var.request_cluster_name}"
 }
 
 resource "google_service_account_key" "kaniko-sa-key" {
-  count              = var.enable_kaniko
+  count              = "${var.request_enable_kaniko}"
   service_account_id = "${google_service_account.kaniko-sa[0].name}"
   public_key_type    = "TYPE_X509_PEM_FILE"
 }
 
 resource "google_project_iam_member" "kaniko-sa-storage-admin-binding" {
-  count  = var.enable_kaniko
+  count  = "${var.request_enable_kaniko}"
   role   = "roles/storage.admin"
   member = "serviceAccount:${google_service_account.kaniko-sa[0].email}"
 }
 
 resource "google_project_iam_member" "kaniko-sa-storage-object-admin-binding" {
-  count  = var.enable_kaniko
+  count  = "${var.request_enable_kaniko}"
   role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${google_service_account.kaniko-sa[0].email}"
 }
 
 resource "google_project_iam_member" "kaniko-sa-storage-object-creator-binding" {
-  count  = var.enable_kaniko
+  count  = "${var.request_enable_kaniko}"
   role   = "roles/storage.objectCreator"
   member = "serviceAccount:${google_service_account.kaniko-sa[0].email}"
 }
 
 resource "google_storage_bucket" "vault-bucket" {
-  count    = var.enable_vault
+  count    = "${var.request_enable_vault}"
   name     = "${var.request_cluster_name}-vault"
   location = "EU"
 }
 
 resource "google_service_account" "vault-sa" {
-  count        = var.enable_vault
+  count        = "${var.request_enable_vault}"
   account_id   = "${var.request_cluster_name}-vt"
   display_name = "Vault service account for ${var.cluster_name}"
 }
 
 resource "google_service_account_key" "vault-sa-key" {
-  count              = var.enable_vault
+  count              = "${var.request_enable_vault}"
   service_account_id = "${google_service_account.vault-sa[0].name}"
   public_key_type    = "TYPE_X509_PEM_FILE"
 }
 
 resource "google_project_iam_member" "vault-sa-storage-object-admin-binding" {
-  count  = var.enable_vault
+  count  = "${var.request_enable_vault}"
   role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${google_service_account.vault-sa[0].email}"
 }
 
 resource "google_project_iam_member" "vault-sa-cloudkms-admin-binding" {
-  count  = var.enable_vault
+  count  = "${var.request_enable_vault}"
   role   = "roles/cloudkms.admin"
   member = "serviceAccount:${google_service_account.vault-sa[0].email}"
 }
 
 resource "google_project_iam_member" "vault-sa-cloudkms-crypto-binding" {
-  count  = var.enable_vault
+  count  = "${var.request_enable_vault}"
   role   = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
   member = "serviceAccount:${google_service_account.vault-sa[0].email}"
 }
 
 resource "google_kms_key_ring" "vault-keyring" {
-  count    = var.enable_vault
+  count    = "${var.request_enable_vault}"
   name     = "${var.request_cluster_name}-keyring"
   location = "${var.slm_location_id}"
 }
 
 resource "google_kms_crypto_key" "vault-crypto-key" {
-  count           = var.enable_vault
+  count           = "${var.request_enable_vault}"
   name            = "${var.request_cluster_name}-crypto-key"
   key_ring        = "${google_kms_key_ring.vault-keyring[0].self_link}"
   rotation_period = "100000s"
@@ -210,7 +210,7 @@ resource "kubernetes_namespace" "jx-namespace" {
 }
 
 resource "kubernetes_secret" "kaniko-secret" {
-  count = var.enable_kaniko
+  count = "${var.request_enable_kaniko}"
   metadata {
     name      = "kaniko-secret"
     namespace = "jx"
@@ -222,7 +222,7 @@ resource "kubernetes_secret" "kaniko-secret" {
 }
 
 resource "kubernetes_secret" "vault-secret" {
-  count = var.enable_vault
+  count = "${var.request_enable_vault}"
   metadata {
     name      = "vault-secret"
     namespace = "jx"
