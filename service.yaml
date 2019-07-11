@@ -1,0 +1,26 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: jx
+  labels:
+    name: jx
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kaniko-secret
+  namespace: default
+type: Opaque
+data:
+  credentials.json: ${kaniko-secret}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vault-secret
+  namespace: default
+type: Opaque
+data:
+  credentials.json: ${vault-secret}
+---

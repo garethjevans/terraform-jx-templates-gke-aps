@@ -3,11 +3,12 @@ terraform {
 }
 
 provider "google" {
-  version = ">= 2.8.0"
   project = "${var.slm_resource_project_id}"
   region  = "${var.slm_location_id}"
   zone    = "${var.request_zone}"
 }
+
+provider "cse" {}
 
 resource "google_project_service" "cloudresourcemanager-api" {
   project            = "${var.slm_resource_project_id}"
@@ -203,31 +204,19 @@ provider "kubernetes" {
   cluster_ca_certificate = "${base64decode(google_container_cluster.jx-cluster.master_auth.0.cluster_ca_certificate)}"
 }
 
-resource "kubernetes_namespace" "jx-namespace" {
-  metadata {
-    name = "jx"
+# Render the k8s YAML file
+data "template_file" "service" {
+  template = "${file("${path.module}/service.yaml")}"
+
+  vars {
+    service          = "jx"
+    kaniko-secret    = "${base64decode(google_service_account_key.kaniko-sa-key[0].private_key)}"
+    vault-secret     = "${base64decode(google_service_account_key.vault-sa-key[0].private_key)}"
   }
 }
 
-resource "kubernetes_secret" "kaniko-secret" {
-  count = "${var.request_enable_kaniko}"
-  metadata {
-    name      = "kaniko-secret"
-    namespace = "jx"
-  }
-
-  data = {
-    "credentials.json" = "${base64decode(google_service_account_key.kaniko-sa-key[0].private_key)}"
-  }
-}
-
-resource "kubernetes_secret" "vault-secret" {
-  count = "${var.request_enable_vault}"
-  metadata {
-    name      = "vault-secret"
-    namespace = "jx"
-  }
-  data = {
-    "credentials.json" = "${base64decode(google_service_account_key.vault-sa-key[0].private_key)}"
-  }
+# Custom provider, will run `kubectl apply` on the cluster_endpoint with the payload in kube_config
+resource "cse_kube_config" "service" {
+  cluster_endpoint = "${google_container_cluster.jx-cluster.endpoint}"
+  kube_config      = "${data.template_file.service.rendered}"
 }
